@@ -33,13 +33,16 @@ A SCRUM-API oferece as seguintes funcionalidades:
    - Cada tarefa pode estar em um dos seguintes estados: "No Backlog", "Aberta", "Em Andamento", "Revisão" ou "Concluída."
 
 ## Diagrama de Classes do Banco de Dados
-![Diagrama de Classes](image.png)
+![Diagrama de Classes](image-db-diagram.png)
 
-O diagrama de classes do banco de dados acima representa a estrutura de dados da SCRUM-API. Ele ilustra a relação entre as entidades, incluindo Usuários, Projetos, Sprints, Backlog e Tarefas.
+
+O [diagrama](https://drawsql.app/teams/workspace-14/diagrams/scrum-pg) de classes do banco de dados acima representa a estrutura de dados da SCRUM-API. Ele ilustra a relação entre as entidades, incluindo Usuários, Projetos, Sprints, Backlog e Tarefas.
 
 ## Rotas da API
 
-Você pode testar todas as funcionalidades da SCRUM-API usando o Insomnia. Basta importar o arquivo de rotas **scrum-api-insomnia.json** para o seu cliente Insomnia.
+Você pode testar todas as funcionalidades da SCRUM-API usando o Insomnia. Basta importar o arquivo de rotas **scrum-api-insomnia.json** para o seu cliente Insomnia, nele contém todas as rotas disponíveis.
+
+![Insomnia](image-insomnia.png)
 
 ## Contribuição
 

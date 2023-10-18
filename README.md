@@ -2,7 +2,6 @@
 O SCRUM-API é uma API para gerenciamento de projetos baseada no framework Spring Boot e utilizando um banco de dados PostgreSQL. Essa API foi desenvolvida para auxiliar na gestão de projetos seguindo a metodologia SCRUM, permitindo o controle de usuários, projetos, sprints, backlog e tarefas de forma eficiente.
 
 ## Principais tecnologias
- - **Java 19**: Utilizaremos a versão 19 do Java
  - **Spring Boot 3**: Trabalharemos com a mais nova versão do Spring Boot, que maximiza a produtividade do desenvolvedor por meio de sua poderosa premissa de autoconfiguração
  - **Spring Data JPA**: Exploraremos como essa ferramenta pode simplificar nossa camada de acesso aos dados, facilitando a integração com bancos de dados PostgreSQL
  - **OpenAPI (Swagger)**: Vamos criar uma documentação de API eficaz e fácil de entender usando a OpenAPI (Swagger), perfeitamente alinhada com a alta produtividade que o Spring Boot oferece;

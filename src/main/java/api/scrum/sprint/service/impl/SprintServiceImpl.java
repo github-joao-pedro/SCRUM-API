@@ -16,7 +16,6 @@ import api.scrum.sprint.repository.SprintRepository;
 import api.scrum.sprint.service.base.SprintService;
 import api.scrum.sprint.view.SprintSimpleView;
 import api.scrum.sprint.view.SprintView;
-import api.scrum.task.model.Task;
 import api.scrum.task.repository.TaskRepository;
 import api.scrum.task.view.TaskSimpleView;
 
@@ -126,10 +125,11 @@ public class SprintServiceImpl implements SprintService {
         Sprint sprint = sprintRepository.findById(id)
             .orElseThrow(() -> new BusinessException(SPRINT_NOT_FOUND_MESSAGE));
         
-        List<Task> tasks = taskRepository.findAllBySprintId(sprint.getId());
-        return tasks.stream()
-            .map(task -> modelMapper.map(task, TaskSimpleView.class))
-            .collect(Collectors.toList());
+        return taskRepository.findAllBySprintId(sprint.getId())
+            .map(tasks -> tasks.stream()
+                .map(task -> modelMapper.map(task, TaskSimpleView.class))
+                .collect(Collectors.toList()))
+            .orElseThrow(() -> new BusinessException("Nenhuma tarefa associado a este sprint"));
     }
 
     private void validateSprintSimpleView(SprintSimpleView sprintSimpleView) {

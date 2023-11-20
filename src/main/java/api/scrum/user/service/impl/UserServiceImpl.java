@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import api.scrum.exceptions.BusinessException;
-import api.scrum.project.model.Project;
 import api.scrum.project.view.ProjectBaseView;
 import api.scrum.relation_user_project.repository.RelationUserProjectRepository;
 import api.scrum.user.model.User;
@@ -109,11 +108,12 @@ public class UserServiceImpl implements UserService{
         
         User user = userRepository.findById(id)
             .orElseThrow(() -> new BusinessException(USER_NOT_FOUND_MESSAGE));
-
-        List<Project> projects = relationUserProjectRepository.findProjectByUserId(user.getId());
-        return projects.stream()
-            .map(project -> modelMapper.map(project, ProjectBaseView.class))
-            .collect(Collectors.toList());
+        
+        return relationUserProjectRepository.findProjectByUserId(user.getId())
+            .map(projects -> projects.stream()
+                .map(project -> modelMapper.map(project, ProjectBaseView.class))
+                .collect(Collectors.toList()))
+            .orElseThrow(() -> new BusinessException("Nenhum projeto associado a este usuário"));
     }
 
     private void validateUserView(UserView userView) {

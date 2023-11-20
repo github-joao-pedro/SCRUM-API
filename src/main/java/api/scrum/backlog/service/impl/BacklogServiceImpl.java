@@ -13,7 +13,6 @@ import api.scrum.backlog.repository.BacklogRepository;
 import api.scrum.backlog.service.base.BacklogService;
 import api.scrum.backlog.view.BacklogView;
 import api.scrum.exceptions.BusinessException;
-import api.scrum.task.model.Task;
 import api.scrum.task.repository.TaskRepository;
 import api.scrum.task.view.TaskSimpleView;
 
@@ -84,9 +83,10 @@ public class BacklogServiceImpl implements BacklogService {
         Backlog backlog = backlogRepository.findById(id)
             .orElseThrow(() -> new BusinessException(BACKLOG_NOT_FOUND_MESSAGE));
         
-        List<Task> tasks = taskRepository.findAllByBacklogId(backlog.getId());
-        return tasks.stream()
-            .map(task -> modelMapper.map(task, TaskSimpleView.class))
-            .collect(Collectors.toList());
+        return taskRepository.findAllByBacklogId(backlog.getId())
+            .map(tasks -> tasks.stream()
+                .map(task -> modelMapper.map(task, TaskSimpleView.class))
+                .collect(Collectors.toList()))
+            .orElseThrow(() -> new BusinessException("Nenhuma tarefa associado a este backlog"));
     }
 }

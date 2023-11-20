@@ -15,16 +15,16 @@ import api.scrum.user.model.User;
 public interface RelationUserProjectRepository extends JpaRepository<RelationUserProject, UUID>{
     
     @Query("SELECT r.user FROM RelationUserProject r WHERE r.project.id = :projectId")
-    List<User> findUsersByProjectId(@Param("projectId") UUID projectId);
+    Optional<List<User>> findUsersByProjectId(@Param("projectId") UUID projectId);
     
     @Query("SELECT r.project FROM RelationUserProject r WHERE r.user.id = :userId")
-    List<Project> findProjectByUserId(@Param("userId") UUID userId);
+    Optional<List<Project>> findProjectByUserId(@Param("userId") UUID userId);
 
     @Query("FROM RelationUserProject r WHERE r.project.id = :projectId")
-    List<RelationUserProject> findAllByProjectId(@Param("projectId") UUID projectId);
+    Optional<List<RelationUserProject>> findAllByProjectId(@Param("projectId") UUID projectId);
 
     @Query("FROM RelationUserProject r WHERE r.user.id = :userId")
-    List<RelationUserProject> findAllByUserId(@Param("userId") UUID userId);
+    Optional<List<RelationUserProject>> findAllByUserId(@Param("userId") UUID userId);
 
     @Query("FROM RelationUserProject r WHERE r.user.id = :userId and r.project.id = :projectId")
     Optional<RelationUserProject> findByUserProjectId(@Param("projectId") UUID projectId, @Param("userId") UUID userId);

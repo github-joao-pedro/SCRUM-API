@@ -2,6 +2,7 @@ package api.scrum.project.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -55,6 +56,8 @@ public class ProjectServiceImpl implements ProjectService {
     private static final String RELATION_NOT_FOUND_MESSAGE = "Relação não encontrado";
     private static final String USER_NOT_FOUND_MESSAGE = "Usuário não encontrado";
     private static final String PROJECT_NOT_FOUND_MESSAGE = "Projeto não encontrado";
+    private static final String BACKLOG_NOT_FOUND_MESSAGE = "Projeto não encontrado";
+    private static final String SPRINT_NOT_FOUND_MESSAGE = "Projeto não encontrado";
     private static final String INVALID_PARAMETERS_MESSAGE = "Parâmetros inválidos";
     private static final String ID_REQUIRED_MESSAGE = "ID obrigatório";
 
@@ -146,19 +149,19 @@ public class ProjectServiceImpl implements ProjectService {
         
         // Busca o usuário pelo ID ou lança uma exceção se não encontrado
         Project project = projectRepository.findById(id)
-                .orElseThrow(() -> new BusinessException(PROJECT_NOT_FOUND_MESSAGE));
+            .orElseThrow(() -> new BusinessException(PROJECT_NOT_FOUND_MESSAGE));
 
         // Apaga respectivo backlog do projeto
-        Backlog backlog = backlogRepository.findByProjectId(id);
-        backlogRepository.delete(backlog);
+        Optional<Backlog> backlogs = backlogRepository.findByProjectId(id);
+        backlogs.ifPresent(backlog -> backlogRepository.delete(backlog));
         
         // Apaga sprints do projeto
-        List<Sprint> sprints = sprintRepository.findSprintByProjectId(id);
-        sprintRepository.deleteAll(sprints);
+        Optional<List<Sprint>> sprints = sprintRepository.findSprintByProjectId(id);
+        sprints.ifPresent(sprint -> sprintRepository.deleteAll(sprint));
         
         // Remove todos os usuarios do projeto
-        List<RelationUserProject> relationUserProjects = relationUserProjectRepository.findAllByProjectId(id);
-        relationUserProjectRepository.deleteAll(relationUserProjects);
+        Optional<List<RelationUserProject>> relationUserProjects = relationUserProjectRepository.findAllByProjectId(id);
+        relationUserProjects.ifPresent(relation -> relationUserProjectRepository.deleteAll(relation));
 
         // Mapeia o usuário para UserView, exclui o usuário e retorna UserView
         ProjectBaseView projectView = modelMapper.map(project, ProjectBaseView.class);
@@ -171,15 +174,19 @@ public class ProjectServiceImpl implements ProjectService {
     public ProjectFullView readFull(UUID id) {
         modelMapper = new ModelMapper();
         
-        
         ProjectFullView projectFullView = new ProjectFullView();
         
         Project project = projectRepository.findById(id)
             .orElseThrow(() -> new BusinessException(PROJECT_NOT_FOUND_MESSAGE));
-        Backlog backlog = backlogRepository.findByProjectId(project.getId());
         
-        List<User> users = relationUserProjectRepository.findUsersByProjectId(project.getId());
-        List<Sprint> sprints = sprintRepository.findSprintByProjectId(project.getId());
+        Backlog backlog = backlogRepository.findByProjectId(project.getId())
+            .orElseThrow(() -> new BusinessException(BACKLOG_NOT_FOUND_MESSAGE));
+        
+        List<User> users = relationUserProjectRepository.findUsersByProjectId(project.getId())
+            .orElseThrow(() -> new BusinessException(USER_NOT_FOUND_MESSAGE));
+        
+        List<Sprint> sprints = sprintRepository.findSprintByProjectId(project.getId())
+            .orElseThrow(() -> new BusinessException(SPRINT_NOT_FOUND_MESSAGE));
 
         List<UserBaseView> userBaseViews = users.stream().map(user -> modelMapper.map(user, UserBaseView.class)).collect(Collectors.toList());
         List<SprintBaseView> sprintBaseViews = sprints.stream().map(sprint -> modelMapper.map(sprint, SprintBaseView.class)).collect(Collectors.toList());
@@ -246,10 +253,11 @@ public class ProjectServiceImpl implements ProjectService {
         Project project = projectRepository.findById(id)
             .orElseThrow(() -> new BusinessException(PROJECT_NOT_FOUND_MESSAGE));
         
-        List<User> users = relationUserProjectRepository.findUsersByProjectId(project.getId());
-        return users.stream()
-            .map(user -> modelMapper.map(user, UserBaseView.class))
-            .collect(Collectors.toList());
+        return relationUserProjectRepository.findUsersByProjectId(project.getId())
+            .map(users -> users.stream()
+                .map(user -> modelMapper.map(user, UserBaseView.class))
+                .collect(Collectors.toList()))
+            .orElseThrow(() -> new BusinessException("Nenhum usuário associado a este projeto"));
     }
 
     @Override
@@ -259,10 +267,12 @@ public class ProjectServiceImpl implements ProjectService {
         Project project = projectRepository.findById(id)
             .orElseThrow(() -> new BusinessException(PROJECT_NOT_FOUND_MESSAGE));
         
-        List<Sprint> sprints = sprintRepository.findSprintByProjectId(project.getId());
-        return sprints.stream()
-            .map(sprint -> modelMapper.map(sprint, SprintBaseView.class))
-            .collect(Collectors.toList());
+        return sprintRepository.findSprintByProjectId(project.getId())
+            .map(sprints -> sprints.stream()
+                .map(sprint -> modelMapper.map(sprint, SprintBaseView.class))
+                .collect(Collectors.toList()))
+            .orElseThrow(() -> new BusinessException("Nenhum sprint associado a este projeto"));
+
     }
 
     private void validateProjectCreateView(ProjectCreateView projectCreateView) {

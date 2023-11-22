@@ -41,7 +41,7 @@ class SprintRepositoryTest {
         sprint2.setProject(project);
         sprintRepository.save(sprint2);
 
-        Optional<List<Sprint>> sprints = sprintRepository.findSprintByProjectId(project.getId());
+        Optional<List<Sprint>> sprints = sprintRepository.findByProjectId(project.getId());
         assertTrue(sprints.isPresent());
         assertTrue(sprints.get().contains(sprint1));
         assertTrue(sprints.get().contains(sprint2));

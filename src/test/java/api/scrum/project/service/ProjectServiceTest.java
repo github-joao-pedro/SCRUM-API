@@ -258,7 +258,7 @@ class ProjectServiceTest {
         when(relationUserProjectRepository.findUsersByProjectId(projectId)).thenReturn(Optional.of(users));
 
         List<Sprint> sprints = new ArrayList<>();
-        when(sprintRepository.findSprintByProjectId(projectId)).thenReturn(Optional.of(sprints));
+        when(sprintRepository.findByProjectId(projectId)).thenReturn(Optional.of(sprints));
 
         // Test the service method
         ProjectFullView result = projectService.readFull(projectId);
@@ -434,7 +434,7 @@ class ProjectServiceTest {
         List<Sprint> sprintList = Arrays.asList(sprint1, sprint2);
 
         when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
-        when(sprintRepository.findSprintByProjectId(projectId)).thenReturn(Optional.of(sprintList));
+        when(sprintRepository.findByProjectId(projectId)).thenReturn(Optional.of(sprintList));
 
         // Test the service method and assert the result
         List<SprintBaseView> result = projectService.findSprints(projectId);

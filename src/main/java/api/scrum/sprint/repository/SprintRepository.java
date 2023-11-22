@@ -13,5 +13,5 @@ import api.scrum.sprint.model.Sprint;
 public interface SprintRepository extends JpaRepository<Sprint, UUID>{
     
     @Query("FROM Sprint s WHERE s.project.id = :projectId")
-    Optional<List<Sprint>> findSprintByProjectId(@Param("projectId") UUID projectId);
+    Optional<List<Sprint>> findByProjectId(@Param("projectId") UUID projectId);
 }

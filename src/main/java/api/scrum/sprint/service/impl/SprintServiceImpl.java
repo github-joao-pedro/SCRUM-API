@@ -70,6 +70,9 @@ public class SprintServiceImpl implements SprintService {
         Sprint existingSprint = sprintRepository.findById(sprintView.getId())
             .orElseThrow(() -> new BusinessException(SPRINT_NOT_FOUND_MESSAGE));
         
+        Project existingProject = projectRepository.findById(existingSprint.getProject().getId())
+            .orElseThrow(() -> new BusinessException(PROJECT_NOT_FOUND_MESSAGE));
+        
         // Atualiza apenas os campos que foram fornecidos na requisição
         if (sprintView.getName() != null) {
             existingSprint.setName(sprintView.getName());

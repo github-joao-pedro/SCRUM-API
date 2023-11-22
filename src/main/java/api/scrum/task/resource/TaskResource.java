@@ -1,5 +1,6 @@
 package api.scrum.task.resource;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +36,11 @@ public class TaskResource {
     @GetMapping("/read")
     public TaskView read(@RequestParam UUID id) {
         return taskService.read(id);
+    }
+    @Operation(summary = "Obtem todas as tarefas do usuário", method = "POST")
+    @GetMapping("/user")
+    public List<TaskSimpleView> findTasksByUser(@RequestParam(name = "userId") UUID userId) {
+        return taskService.findTasksByUser(userId);
     }
     @Operation(summary = "Atualiza tarefa", method = "POST")
     @PutMapping("/update")

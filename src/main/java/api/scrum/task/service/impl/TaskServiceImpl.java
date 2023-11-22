@@ -1,7 +1,9 @@
 package api.scrum.task.service.impl;
 
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -156,11 +158,28 @@ public class TaskServiceImpl implements TaskService {
         taskRepository.delete(task);
         return taskView;
     }
-    
+
+    @Override
+    public List<TaskSimpleView> findTasksByUser(UUID userId) {
+        
+        modelMapper = new ModelMapper();
+
+        if (userId == null) {
+            throw new BusinessException(INVALID_PARAMETERS_MESSAGE);
+        }
+
+        return taskRepository.findAllByUserId(userId)
+            .map(tasks -> tasks.stream()
+                .map(task -> modelMapper.map(task, TaskSimpleView.class))
+                .collect(Collectors.toList()))
+            .orElseThrow(() -> new BusinessException("Nenhum tarefa associado a este usuário"));
+    }
+
     private void validateTaskSimpleView(TaskSimpleView taskSimpleView) {
         if ((taskSimpleView.getBacklogId() == null && taskSimpleView.getSprintId() == null)
         &&  (taskSimpleView.getDescription() == null || taskSimpleView.getTitle() == null || taskSimpleView.getUserId() == null)) {
             throw new BusinessException(INVALID_PARAMETERS_MESSAGE);
         }
     }
+
 }

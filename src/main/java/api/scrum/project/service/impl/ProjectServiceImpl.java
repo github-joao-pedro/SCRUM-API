@@ -61,8 +61,8 @@ public class ProjectServiceImpl implements ProjectService {
     private static final String RELATION_NOT_FOUND_MESSAGE = "Relação não encontrado";
     private static final String USER_NOT_FOUND_MESSAGE = "Usuário não encontrado";
     private static final String PROJECT_NOT_FOUND_MESSAGE = "Projeto não encontrado";
-    private static final String BACKLOG_NOT_FOUND_MESSAGE = "Projeto não encontrado";
-    private static final String SPRINT_NOT_FOUND_MESSAGE = "Projeto não encontrado";
+    private static final String BACKLOG_NOT_FOUND_MESSAGE = "Backlog não encontrado";
+    private static final String SPRINT_NOT_FOUND_MESSAGE = "Sprints não encontrado";
     private static final String INVALID_PARAMETERS_MESSAGE = "Parâmetros inválidos";
     private static final String ID_REQUIRED_MESSAGE = "ID obrigatório";
 
@@ -155,8 +155,7 @@ public class ProjectServiceImpl implements ProjectService {
             .orElseThrow(() -> new BusinessException(PROJECT_NOT_FOUND_MESSAGE));
         Backlog backlog = backlogRepository.findByProjectId(project.getId())
             .orElseThrow(() -> new BusinessException(BACKLOG_NOT_FOUND_MESSAGE));
-        List<Sprint> sprints = sprintRepository.findByProjectId(project.getId())
-            .orElseThrow(() -> new BusinessException(SPRINT_NOT_FOUND_MESSAGE));
+        Optional<List<Sprint>> existingSprints = sprintRepository.findByProjectId(project.getId());
 
         // Apaga todas as tarefa do backlog
         Optional<List<Task>> tasksBacklog = taskRepository.findAllByBacklogId(backlog.getId());
@@ -164,17 +163,21 @@ public class ProjectServiceImpl implements ProjectService {
             tasks -> tasks.stream().forEach(task -> taskRepository.delete(task)));
 
         // Apaga todas as tarefa dos sprints
-        sprints.stream().forEach(sprint -> {
-            Optional<List<Task>> tasksSprint = taskRepository.findAllBySprintId(sprint.getId());
-            tasksSprint.ifPresent(
-                tasks -> tasks.stream().forEach(task -> taskRepository.delete(task)));
+        existingSprints.ifPresent(sprints -> {
+            sprints.stream().forEach(sprint -> {
+                Optional<List<Task>> tasksSprint = taskRepository.findAllBySprintId(sprint.getId());
+                tasksSprint.ifPresent(
+                    tasks -> tasks.stream().forEach(task -> taskRepository.delete(task)));
+            });
         });
         
         // Apaga respectivo backlog do projeto
         backlogRepository.delete(backlog);
         
         // Apaga sprints do projeto
-        sprints.stream().forEach(sprint -> sprintRepository.delete(sprint));
+        existingSprints.ifPresent(sprints -> {
+            sprints.forEach(sprint -> sprintRepository.delete(sprint));
+        });
         
         // Remove todos os usuarios do projeto
         Optional<List<RelationUserProject>> relationUserProjects = relationUserProjectRepository.findAllByProjectId(id);

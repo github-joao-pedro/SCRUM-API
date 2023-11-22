@@ -37,6 +37,8 @@ import api.scrum.relation_user_project.view.RelationUserProjectView;
 import api.scrum.sprint.model.Sprint;
 import api.scrum.sprint.repository.SprintRepository;
 import api.scrum.sprint.view.SprintBaseView;
+import api.scrum.task.model.Task;
+import api.scrum.task.repository.TaskRepository;
 import api.scrum.user.model.User;
 import api.scrum.user.repository.UserRepository;
 import api.scrum.user.service.impl.UserServiceImpl;
@@ -58,6 +60,9 @@ class ProjectServiceTest {
 
     @Mock
     private UserRepository userRepository;
+    
+    @Mock
+    private TaskRepository taskRepository;
 
     @Autowired
     @InjectMocks
@@ -280,6 +285,8 @@ class ProjectServiceTest {
 
         Backlog backlog = new Backlog();
         when(backlogRepository.findByProjectId(projectId)).thenReturn(Optional.of(backlog));
+        when(taskRepository.findAllByBacklogId(backlog.getId())).thenReturn(Optional.of(List.of(new Task())));
+        when(sprintRepository.findByProjectId(projectId)).thenReturn(Optional.of(List.of(new Sprint())));
 
         // Test the service method
         ProjectBaseView result = projectService.delete(projectId);

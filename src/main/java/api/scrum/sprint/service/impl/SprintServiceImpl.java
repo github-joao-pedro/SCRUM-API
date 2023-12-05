@@ -1,17 +1,21 @@
 package api.scrum.sprint.service.impl;
 
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import api.scrum.exceptions.BusinessException;
 import api.scrum.project.model.Project;
 import api.scrum.project.repository.ProjectRepository;
 import api.scrum.sprint.model.Sprint;
+import api.scrum.sprint.model.StatusSprint;
 import api.scrum.sprint.repository.SprintRepository;
 import api.scrum.sprint.service.base.SprintService;
 import api.scrum.sprint.view.SprintSimpleView;
@@ -20,6 +24,7 @@ import api.scrum.task.repository.TaskRepository;
 import api.scrum.task.view.TaskSimpleView;
 
 @Service
+@EnableScheduling
 public class SprintServiceImpl implements SprintService {
 
     @Autowired
@@ -74,6 +79,7 @@ public class SprintServiceImpl implements SprintService {
             .orElseThrow(() -> new BusinessException(PROJECT_NOT_FOUND_MESSAGE));
         
         // Atualiza apenas os campos que foram fornecidos na requisição
+        Boolean updateData = false;
         if (sprintView.getName() != null) {
             existingSprint.setName(sprintView.getName());
         }
@@ -82,9 +88,11 @@ public class SprintServiceImpl implements SprintService {
         }
         if (sprintView.getEndDate() != null) {
             existingSprint.setEndDate(sprintView.getEndDate());
+            updateData = true;
         }
         if (sprintView.getStatus() != null) {
             existingSprint.setStatus(sprintView.getStatus());
+            updateData = true;
         }
         if (sprintView.getProject() != null) {
             existingSprint.setProject(modelMapper.map(sprintView.getProject(), Project.class));
@@ -92,6 +100,10 @@ public class SprintServiceImpl implements SprintService {
 
         // Salva o sprint atualizado
         Sprint updateSprint = sprintRepository.save(existingSprint);
+
+        if (Boolean.TRUE.equals(updateData)) {
+            this.checkDateSprint();
+        }
 
         return modelMapper.map(updateSprint, SprintView.class);
     }
@@ -140,5 +152,25 @@ public class SprintServiceImpl implements SprintService {
         || sprintSimpleView.getProjectId() == null || sprintSimpleView.getStatus() == null || sprintSimpleView.getName() == null) {
             throw new BusinessException(INVALID_PARAMETERS_MESSAGE);
         }
+    }
+
+    @Scheduled(cron = "0 0 0 * * *")
+    public void checkDateSprint() {
+        Date date = new Date();
+        List<Sprint> sprints = sprintRepository.findAll();
+        sprints.stream().forEach(sprint -> {
+            if (sprint.getStartDate() != null && sprint.getEndDate() != null && sprint.getStartDate().compareTo(sprint.getEndDate()) > 0) {
+                if (sprint.getStartDate().compareTo(date) < 0) {
+                    sprint.setStatus(StatusSprint.STATUS_SPRINT_NOT_STARTED);
+                    sprintRepository.save(sprint);
+                } else if (sprint.getStartDate().compareTo(date) <= 0 && sprint.getEndDate().compareTo(date) > 0) {
+                    sprint.setStatus(StatusSprint.STATUS_SPRINT_STARTED);
+                    sprintRepository.save(sprint);
+                } else if (sprint.getEndDate().compareTo(date) < 0) {
+                    sprint.setStatus(StatusSprint.STATUS_SPRINT_CLOSED);
+                    sprintRepository.save(sprint);
+                }
+            }
+        });
     }
 }
